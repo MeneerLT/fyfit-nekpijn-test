@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Answers, AppStep, Classification, ClassificationLevel, Question } from './types';
 import { QUESTIONS, CLASSIFICATION_THRESHOLDS, CLASSIFICATION_DETAILS, APPOINTMENT_URL, FALLBACK_EMAIL, MAX_SCORE } from './constants';
@@ -231,6 +232,12 @@ const QuestionScreen: React.FC<{
         }
     }, [currentIndex, onComplete]);
 
+    const handlePrevious = useCallback(() => {
+        if (currentIndex > 0) {
+            setCurrentIndex(prev => prev - 1);
+        }
+    }, [currentIndex]);
+
     const handleSliderChange = (id: string, value: number) => {
         setAnswers(prev => ({ ...prev, [id]: value }));
     };
@@ -247,27 +254,43 @@ const QuestionScreen: React.FC<{
             <ProgressBar current={currentIndex + 1} total={QUESTIONS.length} />
             
             <div key={currentQuestion.id} className="min-h-[400px] flex flex-col justify-between">
-                {currentQuestion.type === 'slider' ? (
-                    <SliderInput 
-                        question={currentQuestion} 
-                        value={answers[currentQuestion.id] || 0}
-                        onChange={handleSliderChange}
-                    />
-                ) : (
-                    <MultipleChoiceInput
-                        question={currentQuestion}
-                        onSelect={handleOptionSelect}
-                    />
-                )}
-                
-                {currentQuestion.type === 'slider' && (
-                <div className="mt-8 text-center animate-fade-in">
-                    <button onClick={handleNext} className="w-full bg-gray-900 text-white font-bold py-4 px-8 rounded-xl text-lg hover:bg-gray-800 transition-all flex justify-center items-center shadow-md">
-                        {currentIndex < QUESTIONS.length - 1 ? 'Volgende vraag' : 'Bekijk resultaat'}
-                        <ArrowRightIcon />
-                    </button>
+                {/* Input Area */}
+                <div>
+                    {currentQuestion.type === 'slider' ? (
+                        <SliderInput 
+                            question={currentQuestion} 
+                            value={answers[currentQuestion.id] || 0}
+                            onChange={handleSliderChange}
+                        />
+                    ) : (
+                        <MultipleChoiceInput
+                            question={currentQuestion}
+                            onSelect={handleOptionSelect}
+                        />
+                    )}
                 </div>
-                )}
+                
+                {/* Navigation Buttons */}
+                <div className="mt-8 flex flex-col gap-4 animate-fade-in">
+                     {currentQuestion.type === 'slider' && (
+                        <button onClick={handleNext} className="w-full bg-gray-900 text-white font-bold py-4 px-8 rounded-xl text-lg hover:bg-gray-800 transition-all flex justify-center items-center shadow-md">
+                            {currentIndex < QUESTIONS.length - 1 ? 'Volgende vraag' : 'Bekijk resultaat'}
+                            <ArrowRightIcon />
+                        </button>
+                    )}
+
+                    {currentIndex > 0 && (
+                        <button 
+                            onClick={handlePrevious} 
+                            className="mx-auto text-sm font-medium text-gray-400 hover:text-gray-700 flex items-center py-2 px-4 rounded-lg hover:bg-gray-50 transition-all"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                            </svg>
+                            Vorige vraag
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
